@@ -1,0 +1,15 @@
+medicover.py --- automatyzuje sprawdzenie dostępności lekarza w Medicoverze
+
+Wymagania:
+- trzeba zedytować ustawienia.py - i podać login, hasło, itp.
+- odpalony selenium-server-standalone-2.0b3.jar (lub inny), np. przez:
+  /usr/bin/java -jar /opt/selenium-server/selenium-server.jar -port 4444
+- biblioteka klienta Selenium w PYTHONPATH, np.
+  export PYTHONPATH=$PYTHONPATH:/opt/selenium/selenium-2.0b3/py
+- założony katalog pamiec, tam są trzymane wyniki poprzednich sprawdzeń (skrypt unika zgłaszania terminów wizyt, które są już znane), tj.
+  mkdir pamiec
+
+Żeby odpalić jednorazowe sprawdzenie trzeba uruchomić medicover.py, np:
+python medicover.py Pediatra.*zdrowe .*Olszewska.* Warszawa.* 2012-01-17
+
+Skrypt jest naiwny, można go ulepszać - czekam na pull requesty ;)
