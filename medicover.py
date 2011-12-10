@@ -13,6 +13,11 @@ from email.MIMEText import MIMEText
 from email.Charset import Charset
 
 from ustawienia import slownik
+try:
+   from ustawienia import konta
+except ImportError:
+   konta = {}
+
 
 parametry = sys.argv[1:4]
 dopisaneRegExp = [{True: "", False: "regexp:"+i}[i==""] for i in parametry]
@@ -20,7 +25,13 @@ specjalizacja, doktor, centrum = tuple([dopisaneRegExp[i] for i in [0,1,2]])
 
 przed = datetime.datetime.strptime(sys.argv[4], "%Y-%m-%d")
 
-print "Szukamy:"
+if len(sys.argv) > 5:
+   login = sys.argv[5]
+   slownik_konta = konta.get(login, {})
+   slownik_konta.setdefault('login', login)
+   slownik.update(slownik_konta)
+
+print "Szukamy dla loginu %s:" % (slownik['login'],)
 print "- specjalizacji "+specjalizacja
 print "- doktora       "+doktor
 print "- centrum       "+centrum

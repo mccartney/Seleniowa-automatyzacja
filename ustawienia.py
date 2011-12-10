@@ -1,7 +1,8 @@
 #!/usr/bin/python
+# -*- coding: utf8 -*-
 
 slownik = {
-'login' : 'TODO'
+'login' : 'TODO',
 'haslo' : 'TODO',
 'email' : {
      'od' : 'TODO@todo.pl',
@@ -15,3 +16,6 @@ slownik = {
     
 }
 
+"""Mapa: login -> ustawienia, schemat ustawień identyczny jak dla `slownik`"""
+konta = {
+}
