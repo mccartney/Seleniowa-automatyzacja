@@ -112,7 +112,9 @@ dzien = 864000000000
 
 adres="https://online.medicover.pl/WAB3/"
 
-sel = selenium(slownik["selenium"]["host"], slownik["selenium"]["port"], '*firefox /usr/bin/firefox', adres)
+selenium_conf = slownik['selenium']
+sel = selenium(selenium_conf["host"], selenium_conf["port"],
+      selenium_conf.get('browser', '*firefox /usr/bin/firefox'), adres)
 try:
   sel.start()
   sel.open(adres)

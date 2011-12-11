@@ -15,6 +15,7 @@ slownik = {
 'selenium' : {
      'host' : 'localhost',
      'port' : '4444',
+     #'browser' : '*firefox /usr/bin/firefox'
 },    
     
 }
