@@ -201,10 +201,10 @@ try:
     print "NIC NOWEGO"
   else:
     print "Cos nowego: ", wynik
+    mejl(wynik, slownik["email"])
     plik = open(skrot, 'w')
     plik.write(wynikSformatowany)
     plik.close()
-    mejl(wynik, slownik["email"])
 
 finally:
    try:
