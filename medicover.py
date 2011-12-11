@@ -4,10 +4,8 @@
 
 from selenium import selenium
 import sys, time, os, datetime, hashlib
-import socket
 import smtplib
 import pprint
-import datetime
 import getpass
 import traceback
 try:
