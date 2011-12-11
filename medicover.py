@@ -199,7 +199,7 @@ try:
   md5 = hashlib.md5()
   md5.update(wynikSformatowany)
   skrot = 'pamiec/%s' % (md5.hexdigest())
-  if os.path.exists(skrot):
+  if not wynik or os.path.exists(skrot):
     print "NIC NOWEGO"
   else:
     print "Cos nowego: ", wynik
