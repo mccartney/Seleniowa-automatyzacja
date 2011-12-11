@@ -67,14 +67,20 @@ def haslo(service, username, password):
       return password
    return pobiez_haslo(service=service, username=username)
 
+def uni(str_or_unicode):
+   if isinstance(str_or_unicode, unicode):
+      return str_or_unicode
+   else:
+      return str_or_unicode.decode('utf-8')
+
 def mejl(tabelka, ustawieniaMejla):
    od, do, smtp = tuple([ustawieniaMejla[x] for x in ["od", "do", "smtp"]])
-   tekst = "<h2>Wyniki</h2>" +"<ul>"
+   tekst = u"<h2>Wyniki</h2>" +"<ul>"
    
    for dzien in tabelka.keys():
-      tekst=tekst + "<li>"+dzien + "<ol>"
+      tekst=tekst + "<li>"+uni(dzien) + "<ol>"
       for wynikDnia in tabelka[dzien]:
-         tekst=tekst + "<li>"+wynikDnia+"</li>"
+         tekst=tekst + "<li>"+uni(wynikDnia)+"</li>"
       tekst=tekst+"</ol></li>"   
    
    tekst = tekst + ("</ul>" +"<br/>\r-- " +"<br/>\r %s") \
