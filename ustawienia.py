@@ -8,6 +8,9 @@ slownik = {
      'od' : 'TODO@todo.pl',
      'do' : ["TODO@todo.pl", "TODO2@todo.pl"], 
      'smtp' : "todo.todo.lan",
+     'smtp_tls' : False,
+     # smtp_password wymagane dla smtp_tls=True
+     'smtp_password' : 'TODO',
     },
 'selenium' : {
      'host' : 'localhost',

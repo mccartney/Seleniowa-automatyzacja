@@ -8,7 +8,14 @@ import socket
 import smtplib
 import pprint
 import datetime
+import getpass
 import traceback
+try:
+   import keyring
+except ImportError:
+   sys.stderr.write('ImportError: keyring\n')
+   keyring = None
+
 from email.MIMEText import MIMEText
 from email.Charset import Charset
 
@@ -45,6 +52,22 @@ def pozbadzSiePolskichLiter(text):
        text = text.replace(org, nowa)
    return text
 
+def pobiez_haslo(service, username):
+   if keyring:
+      password = keyring.get_password(service, username)
+      if password:
+         return password
+
+   password = getpass.getpass(prompt='podaj haslo dla %s@%s' % (username,
+      service))
+   if password and keyring:
+      keyring.set_password(service, username, password)
+   return password
+
+def haslo(service, username, password):
+   if password:
+      return password
+   return pobiez_haslo(service=service, username=username)
 
 def mejl(tabelka, ustawieniaMejla):
    od, do, smtp = tuple([ustawieniaMejla[x] for x in ["od", "do", "smtp"]])
@@ -69,9 +92,15 @@ def mejl(tabelka, ustawieniaMejla):
    tresc['To'] = ", ".join(do)
    tresc['Subject'] = temat
 
-   serwer=smtplib.SMTP(smtp)
+   if ustawieniaMejla.get('smtp_tls'):
+      smtp_pass = haslo(smtp, od, ustawieniaMejla.get('smtp_password'))
+      serwer=smtplib.SMTP(smtp, 587)
+      serwer.starttls()
+      serwer.login(od, smtp_pass)
+   else:
+      serwer=smtplib.SMTP(smtp)
    serwer.sendmail(od,do,tresc.as_string())
-   serwer.quit()    
+   serwer.quit()
 
 def wybierz(selenium, id, wartosc):
    selenium.select(id, wartosc)
@@ -91,7 +120,8 @@ try:
   sel.wait_for_page_to_load(10000)  
 
   sel.type('id=txUserName', slownik["login"])
-  sel.type('id=txPassword', slownik["haslo"])
+  sel.type('id=txPassword', haslo('medicover', slownik['login'],
+     slownik.get('haslo')))
   sel.click('id=btnLogin')
   sel.wait_for_page_to_load(20000)
 
