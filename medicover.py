@@ -113,6 +113,7 @@ def wybierz(selenium, id, wartosc):
    
 
 dzien = 864000000000
+komponentZData = "//input[@name='dtpStartDateTicks']"
 
 adres="https://online.medicover.pl/WAB3/"
 
@@ -151,8 +152,12 @@ try:
    wybierz(sel, 'id=cboClinic', centrum)
 
   wynik={}
+  
+  dzis = datetime.datetime.now()
+  poczatkowaWartoscPoczatku = int(sel.get_value(komponentZData))
+  max_dni = (przed-dzis).days + 1
 
-  for i in range(3): 
+  for i in range(15):
    sel.click('id=btnSearch')
    sel.wait_for_page_to_load(10000)
    time.sleep(3)
@@ -165,12 +170,12 @@ try:
      sel.click('btnOK')
      sel.wait_for_page_to_load(10000)
      time.sleep(3)
-     komponentZData = "//input[@name='dtpStartDateTicks']"
      
      biezacaWartoscPoczatku = int(sel.get_value(komponentZData))
+     if biezacaWartoscPoczatku > poczatkowaWartoscPoczatku + dzien * max_dni:
+        print "Wybieglismy juz ponad %d dni w przyszlosc, Przerywamy iteracje po %d obrocie" % (max_dni, i)
+        break
      sel.type(komponentZData, str(biezacaWartoscPoczatku + 7 * dzien)) 
-  
-  dzis = datetime.datetime.now()
   
   while sel.is_element_present('id=dgGrid'):  
      dataNapis = sel.get_table('dgGrid.0.0').strip().split(" ")[1].__str__()
