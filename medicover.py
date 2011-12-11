@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+# vim: sw=3 sts=3
 
 from selenium import selenium
 import sys, time, os, datetime, hashlib
@@ -7,6 +8,7 @@ import socket
 import smtplib
 import pprint
 import datetime
+import traceback
 from email.MIMEText import MIMEText
 from email.Charset import Charset
 
@@ -164,8 +166,10 @@ try:
     mejl(wynik, slownik["email"])
 
 finally:
-  sel.close()
-  time.sleep(2)
-  sel.stop()
-  time.sleep(2)
-  
+   try:
+      sel.close()
+      time.sleep(2)
+      sel.stop()
+      time.sleep(2)
+   except:
+      traceback.print_exc()
