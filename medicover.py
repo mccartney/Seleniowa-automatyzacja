@@ -46,7 +46,7 @@ def pozbadzSiePolskichLiter(text):
        text = text.replace(org, nowa)
    return text
 
-def pobiez_haslo(service, username):
+def pobierz_haslo(service, username):
    if keyring:
       password = keyring.get_password(service, username)
       if password:
@@ -61,7 +61,7 @@ def pobiez_haslo(service, username):
 def haslo(service, username, password):
    if password:
       return password
-   return pobiez_haslo(service=service, username=username)
+   return pobierz_haslo(service=service, username=username)
 
 def uni(str_or_unicode):
    if isinstance(str_or_unicode, unicode):
