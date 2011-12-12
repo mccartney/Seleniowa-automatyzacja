@@ -1,16 +1,28 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+# vim: sw=3 sts=3
 
 from selenium import selenium
 import sys, time, os, datetime, hashlib
-import socket
 import smtplib
 import pprint
-import datetime
+import getpass
+import traceback
+try:
+   import keyring
+except ImportError:
+   sys.stderr.write('ImportError: keyring\n')
+   keyring = None
+
 from email.MIMEText import MIMEText
 from email.Charset import Charset
 
 from ustawienia import slownik
+try:
+   from ustawienia import konta
+except ImportError:
+   konta = {}
+
 
 parametry = sys.argv[1:4]
 dopisaneRegExp = [{True: "", False: "regexp:"+i}[i==""] for i in parametry]
@@ -18,7 +30,13 @@ specjalizacja, doktor, centrum = tuple([dopisaneRegExp[i] for i in [0,1,2]])
 
 przed = datetime.datetime.strptime(sys.argv[4], "%Y-%m-%d")
 
-print "Szukamy:"
+if len(sys.argv) > 5:
+   login = sys.argv[5]
+   slownik_konta = konta.get(login, {})
+   slownik_konta.setdefault('login', login)
+   slownik.update(slownik_konta)
+
+print "Szukamy dla loginu %s:" % (slownik['login'],)
 print "- specjalizacji "+specjalizacja
 print "- doktora       "+doktor
 print "- centrum       "+centrum
@@ -32,15 +50,37 @@ def pozbadzSiePolskichLiter(text):
        text = text.replace(org, nowa)
    return text
 
+def pobiez_haslo(service, username):
+   if keyring:
+      password = keyring.get_password(service, username)
+      if password:
+         return password
+
+   password = getpass.getpass(prompt='podaj haslo dla %s@%s' % (username,
+      service))
+   if password and keyring:
+      keyring.set_password(service, username, password)
+   return password
+
+def haslo(service, username, password):
+   if password:
+      return password
+   return pobiez_haslo(service=service, username=username)
+
+def uni(str_or_unicode):
+   if isinstance(str_or_unicode, unicode):
+      return str_or_unicode
+   else:
+      return str_or_unicode.decode('utf-8')
 
 def mejl(tabelka, ustawieniaMejla):
    od, do, smtp = tuple([ustawieniaMejla[x] for x in ["od", "do", "smtp"]])
-   tekst = "<h2>Wyniki</h2>" +"<ul>"
+   tekst = u"<h2>Wyniki</h2>" +"<ul>"
    
    for dzien in tabelka.keys():
-      tekst=tekst + "<li>"+dzien + "<ol>"
+      tekst=tekst + "<li>"+uni(dzien) + "<ol>"
       for wynikDnia in tabelka[dzien]:
-         tekst=tekst + "<li>"+wynikDnia+"</li>"
+         tekst=tekst + "<li>"+uni(wynikDnia)+"</li>"
       tekst=tekst+"</ol></li>"   
    
    tekst = tekst + ("</ul>" +"<br/>\r-- " +"<br/>\r %s") \
@@ -56,9 +96,15 @@ def mejl(tabelka, ustawieniaMejla):
    tresc['To'] = ", ".join(do)
    tresc['Subject'] = temat
 
-   serwer=smtplib.SMTP(smtp)
+   if ustawieniaMejla.get('smtp_tls'):
+      smtp_pass = haslo(smtp, od, ustawieniaMejla.get('smtp_password'))
+      serwer=smtplib.SMTP(smtp, 587)
+      serwer.starttls()
+      serwer.login(od, smtp_pass)
+   else:
+      serwer=smtplib.SMTP(smtp)
    serwer.sendmail(od,do,tresc.as_string())
-   serwer.quit()    
+   serwer.quit()
 
 def wybierz(selenium, id, wartosc):
    selenium.select(id, wartosc)
@@ -67,10 +113,13 @@ def wybierz(selenium, id, wartosc):
    
 
 dzien = 864000000000
+komponentZData = "//input[@name='dtpStartDateTicks']"
 
 adres="https://online.medicover.pl/WAB3/"
 
-sel = selenium(slownik["selenium"]["host"], slownik["selenium"]["port"], '*firefox /usr/bin/firefox', adres)
+selenium_conf = slownik['selenium']
+sel = selenium(selenium_conf["host"], selenium_conf["port"],
+      selenium_conf.get('browser', '*firefox /usr/bin/firefox'), adres)
 try:
   sel.start()
   sel.open(adres)
@@ -78,7 +127,8 @@ try:
   sel.wait_for_page_to_load(10000)  
 
   sel.type('id=txUserName', slownik["login"])
-  sel.type('id=txPassword', slownik["haslo"])
+  sel.type('id=txPassword', haslo('medicover', slownik['login'],
+     slownik.get('haslo')))
   sel.click('id=btnLogin')
   sel.wait_for_page_to_load(20000)
 
@@ -102,8 +152,12 @@ try:
    wybierz(sel, 'id=cboClinic', centrum)
 
   wynik={}
+  
+  dzis = datetime.datetime.now()
+  poczatkowaWartoscPoczatku = int(sel.get_value(komponentZData))
+  max_dni = (przed-dzis).days + 1
 
-  for i in range(3): 
+  for i in range(15):
    sel.click('id=btnSearch')
    sel.wait_for_page_to_load(10000)
    time.sleep(3)
@@ -116,12 +170,12 @@ try:
      sel.click('btnOK')
      sel.wait_for_page_to_load(10000)
      time.sleep(3)
-     komponentZData = "//input[@name='dtpStartDateTicks']"
      
      biezacaWartoscPoczatku = int(sel.get_value(komponentZData))
+     if biezacaWartoscPoczatku > poczatkowaWartoscPoczatku + dzien * max_dni:
+        print "Wybieglismy juz ponad %d dni w przyszlosc, Przerywamy iteracje po %d obrocie" % (max_dni, i)
+        break
      sel.type(komponentZData, str(biezacaWartoscPoczatku + 7 * dzien)) 
-  
-  dzis = datetime.datetime.now()
   
   while sel.is_element_present('id=dgGrid'):  
      dataNapis = sel.get_table('dgGrid.0.0').strip().split(" ")[1].__str__()
@@ -154,18 +208,20 @@ try:
   md5 = hashlib.md5()
   md5.update(wynikSformatowany)
   skrot = 'pamiec/%s' % (md5.hexdigest())
-  if os.path.exists(skrot):
+  if not wynik or os.path.exists(skrot):
     print "NIC NOWEGO"
   else:
     print "Cos nowego: ", wynik
+    mejl(wynik, slownik["email"])
     plik = open(skrot, 'w')
     plik.write(wynikSformatowany)
     plik.close()
-    mejl(wynik, slownik["email"])
 
 finally:
-  sel.close()
-  time.sleep(2)
-  sel.stop()
-  time.sleep(2)
-  
+   try:
+      sel.close()
+      time.sleep(2)
+      sel.stop()
+      time.sleep(2)
+   except:
+      traceback.print_exc()
