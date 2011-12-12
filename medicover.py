@@ -14,11 +14,7 @@ from email.MIMEText import MIMEText
 from email.Charset import Charset
 
 from ustawienia import slownik
-try:
-   from ustawienia import konta
-except ImportError:
-   konta = {}
-
+from ustawienia import konta
 
 parametry = sys.argv[1:4]
 dopisaneRegExp = [{True: "", False: "regexp:"+i}[i==""] for i in parametry]
