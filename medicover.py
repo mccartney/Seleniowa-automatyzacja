@@ -15,6 +15,7 @@ from email.Charset import Charset
 
 from ustawienia import slownik
 from ustawienia import konta
+import hasla
 
 parametry = sys.argv[1:4]
 dopisaneRegExp = [{True: "", False: "regexp:"+i}[i==""] for i in parametry]
@@ -41,23 +42,6 @@ def pozbadzSiePolskichLiter(text):
    for org, nowa in dic.iteritems():
        text = text.replace(org, nowa)
    return text
-
-def pobierz_haslo(service, username):
-   if keyring:
-      password = keyring.get_password(service, username)
-      if password:
-         return password
-
-   password = getpass.getpass(prompt='podaj haslo dla %s@%s' % (username,
-      service))
-   if password and keyring:
-      keyring.set_password(service, username, password)
-   return password
-
-def haslo(service, username, password):
-   if password:
-      return password
-   return pobierz_haslo(service=service, username=username)
 
 def uni(str_or_unicode):
    if isinstance(str_or_unicode, unicode):
@@ -89,7 +73,7 @@ def mejl(tabelka, ustawieniaMejla):
    tresc['Subject'] = temat
 
    if ustawieniaMejla.get('smtp_tls'):
-      smtp_pass = haslo(smtp, od, ustawieniaMejla.get('smtp_password'))
+      smtp_pass = hasla.haslo(smtp, od, ustawieniaMejla.get('smtp_password'))
       serwer=smtplib.SMTP(smtp, 587)
       serwer.starttls()
       serwer.login(od, smtp_pass)
@@ -119,8 +103,7 @@ try:
   sel.wait_for_page_to_load(10000)  
 
   sel.type('id=txUserName', slownik["login"])
-  sel.type('id=txPassword', haslo('medicover', slownik['login'],
-     slownik.get('haslo')))
+  sel.type('id=txPassword', hasla.haslo('medicover', slownik['login'], slownik.get('haslo')))
   sel.click('id=btnLogin')
   sel.wait_for_page_to_load(20000)
 
