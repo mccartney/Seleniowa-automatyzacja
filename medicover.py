@@ -8,11 +8,7 @@ import smtplib
 import pprint
 import getpass
 import traceback
-try:
-   import keyring
-except ImportError:
-   sys.stderr.write('ImportError: keyring\n')
-   keyring = None
+import keyring
 
 from email.MIMEText import MIMEText
 from email.Charset import Charset
