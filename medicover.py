@@ -132,26 +132,12 @@ try:
   poczatkowaWartoscPoczatku = int(sel.get_value(komponentZData))
   max_dni = (przed-dzis).days + 1
 
-  for i in range(15):
-   sel.click('id=btnSearch')
-   sel.wait_for_page_to_load(10000)
-   time.sleep(3)
-   if sel.is_element_present('id=dgGrid'):
-     break
-   else:
-     if not sel.is_element_present('btnOK'):
-        print "Przerywamy iteracje po %d" % (i)
-        break
-     sel.click('btnOK')
-     sel.wait_for_page_to_load(10000)
-     time.sleep(3)
-     
-     biezacaWartoscPoczatku = int(sel.get_value(komponentZData))
-     if biezacaWartoscPoczatku > poczatkowaWartoscPoczatku + dzien * max_dni:
-        print "Wybieglismy juz ponad %d dni w przyszlosc, Przerywamy iteracje po %d obrocie" % (max_dni, i)
-        break
-     sel.type(komponentZData, str(biezacaWartoscPoczatku + 7 * dzien)) 
-  
+  sel.click('id=btnSearch')
+  sel.wait_for_page_to_load(10000)
+  time.sleep(3)
+  while sel.is_element_present('id=lblLoading'):
+      time.sleep(3)
+
   while sel.is_element_present('id=dgGrid'):  
      dataNapis = sel.get_table('dgGrid.0.0').strip().split(" ")[1].__str__()
      data = datetime.datetime.strptime(dataNapis, "%d/%m/%Y")
@@ -162,7 +148,7 @@ try:
        break
        
      wynikiTegoDnia=[]  
-     wynik[data.strftime("%d-%m-%Y (%A)")] = wynikiTegoDnia  
+     wynik[data.strftime("%Y-%m-%d (%A)")] = wynikiTegoDnia  
 
      ileWierszy = int(sel.get_xpath_count("//*[@id='dgGrid']/*/*"))
      for wiersz in range(ileWierszy):
@@ -178,7 +164,7 @@ try:
      else:
          break          
 
-  wynikSformatowany=pprint.pformat(wynik)
+  wynikSformatowany=pprint.pformat(sorted(wynik))
 
   md5 = hashlib.md5()
   md5.update(wynikSformatowany)
