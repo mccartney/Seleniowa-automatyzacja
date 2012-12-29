@@ -3,15 +3,7 @@
 # vim: sw=3 sts=3
 
 from selenium import selenium
-import sys, time, os, datetime, hashlib
-import smtplib
-import pprint
-import getpass
-import traceback
-import keyring
-
-from email.MIMEText import MIMEText
-from email.Charset import Charset
+import sys, time, os, datetime
 
 from ustawienia import slownik
 from ustawienia import konta
@@ -20,7 +12,8 @@ from scraper import *
 
 class ScraperMedicover(ScraperLekarzy):
   def __init__(self):
-    ScraperLekarzy.__init__(self, adresStartowy="https://online.medicover.pl/WAB3/")
+    ScraperLekarzy.__init__(self, adresStartowy="https://online.medicover.pl/WAB3/",
+                                  naglowekWMejlu="MEDICOVER")
   def odwiedzIZbierzWyniki(self, sel):
     dzien = 864000000000
     komponentZData = "//input[@name='dtpStartDateTicks']"

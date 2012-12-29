@@ -18,8 +18,9 @@ from ustawienia import konta
 import hasla
 
 class ScraperLekarzy: 
-    def __init__(self, adresStartowy):
+    def __init__(self, adresStartowy, naglowekWMejlu):
       self.adresStartowy = adresStartowy
+      self.naglowekWMejlu = naglowekWMejlu
 
     def scrapuj(self):
       try:
@@ -86,7 +87,7 @@ class ScraperLekarzy:
          % datetime.datetime.now().__str__()
        
        
-       temat="[MEDICOVER] %s" % (datetime.datetime.now())
+       temat="[%s] %s" % (self.naglowekWMejlu, datetime.datetime.now())
 
        charset=Charset('utf-8')
        tresc=MIMEText(tekst.encode('utf-8'), 'html')
