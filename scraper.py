@@ -3,7 +3,7 @@
 # vim: sw=3 sts=3
 
 from selenium import selenium
-import sys, time, os, datetime, hashlib
+import time, os, datetime, hashlib
 import smtplib
 import pprint
 import getpass
@@ -18,9 +18,28 @@ from ustawienia import konta
 import hasla
 
 class ScraperLekarzy: 
-    def __init__(self, adresStartowy, naglowekWMejlu):
+    def __init__(self, adresStartowy, naglowekWMejlu, parametryWejsciowe):
       self.adresStartowy = adresStartowy
       self.naglowekWMejlu = naglowekWMejlu
+
+      parametry = parametryWejsciowe[1:4]
+      dopisaneRegExp = [{True: "", False: "regexp:"+i}[i==""] for i in parametry]
+      self.specjalizacja, self.doktor, self.centrum = tuple([dopisaneRegExp[i] for i in [0,1,2]])
+      
+      self.przed = datetime.datetime.strptime(parametryWejsciowe[4], "%Y-%m-%d")
+
+      if len(parametryWejsciowe) > 5:
+         login = parametryWejsciowe[5]
+         slownik_konta = konta.get(login, {})
+         slownik_konta.setdefault('login', login)
+         slownik.update(slownik_konta)
+
+      print "Szukamy dla loginu %s:" % (slownik['login'],)
+      print "- specjalizacji "+self.specjalizacja
+      print "- doktora       "+self.doktor
+      print "- centrum       "+self.centrum
+      print "Wizyta przed "+str(self.przed)
+
 
     def scrapuj(self):
       try:
@@ -54,7 +73,7 @@ class ScraperLekarzy:
           print "NIC NOWEGO"
         else:
           print "Cos nowego: ", wynik
-          self.mejl(wynik, slownik["email"])
+#          self.mejl(wynik, slownik["email"])
           plik = open(skrot, 'w')
           plik.write(wynikSformatowany)
           plik.close()

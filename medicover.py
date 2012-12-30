@@ -11,9 +11,9 @@ import hasla
 from scraper import *
 
 class ScraperMedicover(ScraperLekarzy):
-  def __init__(self):
+  def __init__(self, parametry):
     ScraperLekarzy.__init__(self, adresStartowy="https://online.medicover.pl/WAB3/",
-                                  naglowekWMejlu="MEDICOVER")
+                                  naglowekWMejlu="MEDICOVER", parametryWejsciowe=parametry)
   def odwiedzIZbierzWyniki(self, sel):
     dzien = 864000000000
     komponentZData = "//input[@name='dtpStartDateTicks']"
@@ -34,21 +34,21 @@ class ScraperMedicover(ScraperLekarzy):
     sel.select('id=cboRegion', 'Warszawa')
     time.sleep(2)
     
-    if specjalizacja:
-     self.wybierz(sel, 'id=cboSpecialty', specjalizacja) 
+    if self.specjalizacja:
+     self.wybierz(sel, 'id=cboSpecialty', self.specjalizacja) 
     if sel.is_element_present('id=chkFollowUpVisit'):	# pojawia się po wyborze "Pediatra"
      sel.click('id=chkFollowUpVisit')
      time.sleep(2)
-    if doktor:
-     self.wybierz(sel, 'id=cboDoctor', doktor) 
-    if centrum:
-     self.wybierz(sel, 'id=cboClinic', centrum)
+    if self.doktor:
+     self.wybierz(sel, 'id=cboDoctor', self.doktor) 
+    if self.centrum:
+     self.wybierz(sel, 'id=cboClinic', self.centrum)
 
     wynik={}
     
     dzis = datetime.datetime.now()
     poczatkowaWartoscPoczatku = int(sel.get_value(komponentZData))
-    max_dni = (przed-dzis).days + 1
+    max_dni = (self.przed-dzis).days + 1
 
     sel.click('id=btnSearch')
     sel.wait_for_page_to_load(10000)
@@ -61,7 +61,7 @@ class ScraperMedicover(ScraperLekarzy):
        data = datetime.datetime.strptime(dataNapis, "%d/%m/%Y")
        
        zaIleDni = (data-dzis).days
-       if data > przed:
+       if data > self.przed:
          print "Wybieglismy juz %d dni w przyszlosc, konczymy" % zaIleDni
          break
          
@@ -85,23 +85,6 @@ class ScraperMedicover(ScraperLekarzy):
 
 
 if __name__ == "__main__":
-  parametry = sys.argv[1:4]
-  dopisaneRegExp = [{True: "", False: "regexp:"+i}[i==""] for i in parametry]
-  specjalizacja, doktor, centrum = tuple([dopisaneRegExp[i] for i in [0,1,2]])
-
-  przed = datetime.datetime.strptime(sys.argv[4], "%Y-%m-%d")
-
-  if len(sys.argv) > 5:
-     login = sys.argv[5]
-     slownik_konta = konta.get(login, {})
-     slownik_konta.setdefault('login', login)
-     slownik.update(slownik_konta)
-
-  print "Szukamy dla loginu %s:" % (slownik['login'],)
-  print "- specjalizacji "+specjalizacja
-  print "- doktora       "+doktor
-  print "- centrum       "+centrum
-  print "Wizyta przed "+str(przed)
-  ScraperMedicover().scrapuj()
+  ScraperMedicover(sys.argv).scrapuj()
   
 
