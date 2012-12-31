@@ -69,11 +69,12 @@ class ScraperLekarzy:
         md5 = hashlib.md5()
         md5.update(wynikSformatowany)
         skrot = 'pamiec/%s' % (md5.hexdigest())
+        print "Skrót wyszedł: "+ skrot
         if not wynik or os.path.exists(skrot): 
           print "NIC NOWEGO"
         else:
           print "Cos nowego: ", wynik
-#          self.mejl(wynik, slownik["email"])
+          self.mejl(wynik, slownik["email"])
           plik = open(skrot, 'w')
           plik.write(wynikSformatowany)
           plik.close()
