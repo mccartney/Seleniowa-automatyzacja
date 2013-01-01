@@ -64,7 +64,7 @@ class ScraperLekarzy:
      return sel
 
     def sprawdzCzyWynikNowyIEwentualnieZakomunikuj(self, wynik):
-        wynikSformatowany=pprint.pformat(sorted(wynik))
+        wynikSformatowany=pprint.pformat(wynik)
 
         md5 = hashlib.md5()
         md5.update(wynikSformatowany)
