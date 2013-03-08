@@ -70,7 +70,9 @@ class ScraperLekarzy:
         md5.update(wynikSformatowany)
         skrot = 'pamiec/%s' % (md5.hexdigest())
         print "Skrót wyszedł: "+ skrot
-        if not wynik or os.path.exists(skrot): 
+        if not wynik:
+           print "Brak wynikow"
+        elif os.path.exists(skrot): 
           print "NIC NOWEGO"
         else:
           print "Cos nowego: ", wynik
