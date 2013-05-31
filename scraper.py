@@ -99,7 +99,7 @@ class ScraperLekarzy:
        od, do, smtp = tuple([ustawieniaMejla[x] for x in ["od", "do", "smtp"]])
        tekst = u"<h2>Wyniki</h2>" +"<ul>"
        
-       for dzien in tabelka.keys():
+       for dzien in sorted(tabelka.keys()):
           tekst=tekst + "<li>"+self.uni(dzien) + "<ol>"
           for wynikDnia in tabelka[dzien]:
              tekst=tekst + "<li>"+self.uni(wynikDnia)+"</li>"
