@@ -28,7 +28,7 @@ class ScraperMedicover(ScraperLekarzy):
     sel.click('id=btnNext')
     sel.wait_for_page_to_load(10000)
 
-    sel.click('id=btnBookAppointment')
+    sel.click('id=lbnArrangeVisit')
     sel.wait_for_page_to_load(10000)
 
     sel.select('id=cboRegion', 'Warszawa')
