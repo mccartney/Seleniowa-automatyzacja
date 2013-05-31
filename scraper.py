@@ -69,14 +69,11 @@ class ScraperLekarzy:
         md5.update(co)
         skrot = 'pamiec/%s' % (md5.hexdigest())
         print "Skrót wyszedł: "+ skrot
-        return os.path.exists(skrot) 
-    def zapisz(self, co):
-        md5 = hashlib.md5()
-        md5.update(co)
-        skrot = 'pamiec/%s' % (md5.hexdigest())
+        ret = os.path.exists(skrot) 
         plik = open(skrot, 'w')
         plik.write(co)
         plik.close()
+        return ret
 
     def sprawdzCzyWynikNowyIEwentualnieZakomunikuj(self, wynik):
         if not wynik:
@@ -90,7 +87,6 @@ class ScraperLekarzy:
         else: 
           print "Cos nowego: ", wynik
           self.mejl(wynik, slownik["email"])
-          self.zapisz(wynikSformatowany)
 
     def pozbadzSiePolskichLiter(self, text):
        dic = {u'ą':'a', u'ć':'c', u'ę':'e', u'ł':'l', u'ń':'n', u'ó':'o', u'ś':'s', u'ź':'z', u'ż':'z', 
@@ -110,13 +106,21 @@ class ScraperLekarzy:
        od, do, smtp = tuple([ustawieniaMejla[x] for x in ["od", "do", "smtp"]])
        tekst = u"<h2>Wyniki</h2>" +"<ul>"
        
+       wynikiNowe=""
+       
        for dzien in sorted(tabelka.keys()):
           tekst=tekst + "<li>"+self.uni(dzien) + "<ol>"
           for wynikDnia in tabelka[dzien]:
              tekst=tekst + "<li>"+self.uni(wynikDnia)+"</li>"
+             wynikSamWSobie = "<li>%s - %s</li>\r" % (self.uni(dzien), self.uni(wynikDnia))
+             if not self.sprawdzCzyJuzSpotkalismy(wynikSamWSobie):
+              wynikiNowe = wynikiNowe + "\r" + wynikSamWSobie
           tekst=tekst+"</ol></li>"   
        
-       tekst = tekst + ("</ul>" +"<br/>\r-- " +"<br/>\r %s") \
+       tekst=tekst+"</ul><br/><br/><h2>... z czego nowymi wizytami sa</h2>"
+       tekst=tekst+"<ul>"+wynikiNowe+"</ul>"
+       
+       tekst = tekst + ("<br/>\r-- " +"<br/>\r %s") \
          % datetime.datetime.now().__str__()
        
        
