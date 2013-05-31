@@ -63,23 +63,34 @@ class ScraperLekarzy:
      sel.open(self.adresStartowy)
      return sel
 
-    def sprawdzCzyWynikNowyIEwentualnieZakomunikuj(self, wynik):
-        wynikSformatowany=pprint.pformat(wynik)
-
+    # TODO te dwie metody trzeba by obiektowo zrobic, wydzielic klase - Zapisywacz albo Pamiec
+    def sprawdzCzyJuzSpotkalismy(self, co):
         md5 = hashlib.md5()
-        md5.update(wynikSformatowany)
+        md5.update(co)
         skrot = 'pamiec/%s' % (md5.hexdigest())
         print "Skrót wyszedł: "+ skrot
+        return os.path.exists(skrot) 
+    def zapisz(self, co):
+        md5 = hashlib.md5()
+        md5.update(co)
+        skrot = 'pamiec/%s' % (md5.hexdigest())
+        plik = open(skrot, 'w')
+        plik.write(co)
+        plik.close()
+
+    def sprawdzCzyWynikNowyIEwentualnieZakomunikuj(self, wynik):
         if not wynik:
            print "Brak wynikow"
-        elif os.path.exists(skrot): 
+           return
+
+        wynikSformatowany=pprint.pformat(wynik)
+        
+        if self.sprawdzCzyJuzSpotkalismy(wynikSformatowany):
           print "NIC NOWEGO"
-        else:
+        else: 
           print "Cos nowego: ", wynik
           self.mejl(wynik, slownik["email"])
-          plik = open(skrot, 'w')
-          plik.write(wynikSformatowany)
-          plik.close()
+          self.zapisz(wynikSformatowany)
 
     def pozbadzSiePolskichLiter(self, text):
        dic = {u'ą':'a', u'ć':'c', u'ę':'e', u'ł':'l', u'ń':'n', u'ó':'o', u'ś':'s', u'ź':'z', u'ż':'z', 
