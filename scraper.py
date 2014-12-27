@@ -2,7 +2,11 @@
 # -*- coding: utf-8 -*-
 # vim: sw=3 sts=3
 
-from selenium import selenium
+from selenium import webdriver
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
 import time, os, datetime, hashlib
 import smtplib
 import pprint
@@ -21,13 +25,15 @@ class ScraperLekarzy:
     def __init__(self, adresStartowy, naglowekWMejlu, parametryWejsciowe):
       self.adresStartowy = adresStartowy
       self.naglowekWMejlu = naglowekWMejlu
-
-      parametry = parametryWejsciowe[1:4]
-      dopisaneRegExp = [{True: "", False: "regexp:"+i}[i==""] for i in parametry]
-      self.specjalizacja, self.doktor, self.centrum = tuple([dopisaneRegExp[i] for i in [0,1,2]])
       
-      self.przed = datetime.datetime.strptime(parametryWejsciowe[4], "%Y-%m-%d")
+      parametryWejsciowe = parametryWejsciowe[1:4]+['','','','']
+      self.specjalizacja, self.doktor, self.centrum = tuple([parametryWejsciowe[i] for i in [0,1,2]])
 
+      self.przed=''      
+      if parametryWejsciowe[4]:
+       self.przed = datetime.datetime.strptime(parametryWejsciowe[4], "%Y-%m-%d")
+
+      #TODO to jest przecież specyficzne dla Medicoveru, przenieść do medicover.py
       if len(parametryWejsciowe) > 5:
          login = parametryWejsciowe[5]
          slownik_konta = konta.get(login, {})
@@ -50,18 +56,20 @@ class ScraperLekarzy:
          try: 
             selenium.close()
             time.sleep(2)
-            selenium.stop()   
-            time.sleep(2)
          except:
             traceback.print_exc()
 
     def wystartujSelenium(self):
      selenium_conf = slownik['selenium']
-     sel = selenium(selenium_conf["host"], selenium_conf["port"],
-           selenium_conf.get('browser', '*firefox /usr/bin/firefox'), self.adresStartowy)
-     sel.start()
-     sel.open(self.adresStartowy)
-     return sel
+
+     driver = webdriver.Remote(
+        command_executor='http://%s:%s/wd/hub' % (selenium_conf["host"], selenium_conf["port"]),    
+         desired_capabilities=DesiredCapabilities.FIREFOX)
+     driver.get(self.adresStartowy)
+     return driver
+     
+    def czekajAzSiePojawi(self, driver, co):
+     return WebDriverWait(driver, timeout=30).until(EC.presence_of_element_located(co))
 
     # TODO te dwie metody trzeba by obiektowo zrobic, wydzielic klase - Zapisywacz albo Pamiec
     def sprawdzCzyJuzSpotkalismy(self, co):
@@ -106,19 +114,10 @@ class ScraperLekarzy:
        od, do, smtp = tuple([ustawieniaMejla[x] for x in ["od", "do", "smtp"]])
        tekst = u"<h2>Wyniki</h2>" +"<ul>"
        
-       wynikiNowe=""
+       for dzien in tabelka:
+          tekst=tekst + "<li>%s</li>" % dzien
        
-       for dzien in sorted(tabelka.keys()):
-          tekst=tekst + "<li>"+self.uni(dzien) + "<ol>"
-          for wynikDnia in tabelka[dzien]:
-             tekst=tekst + "<li>"+self.uni(wynikDnia)+"</li>"
-             wynikSamWSobie = "<li>%s - %s</li>\r" % (self.uni(dzien), self.uni(wynikDnia))
-             if not self.sprawdzCzyJuzSpotkalismy(wynikSamWSobie):
-              wynikiNowe = wynikiNowe + "\r" + wynikSamWSobie
-          tekst=tekst+"</ol></li>"   
-       
-       tekst=tekst+"</ul><br/><br/><h2>... z czego nowymi wizytami sa</h2>"
-       tekst=tekst+"<ul>"+wynikiNowe+"</ul>"
+       tekst=tekst+"</ul><br/><br/>"
        
        tekst = tekst + ("<br/>\r-- " +"<br/>\r %s") \
          % datetime.datetime.now().__str__()

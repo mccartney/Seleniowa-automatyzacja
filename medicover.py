@@ -2,8 +2,14 @@
 # -*- coding: utf-8 -*-
 # vim: sw=3 sts=3
 
-from selenium import selenium
-import sys, time, os, datetime
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import Select
+
+import sys, time, os, datetime, re
 
 from ustawienia import slownik
 from ustawienia import konta
@@ -12,76 +18,60 @@ from scraper import *
 
 class ScraperMedicover(ScraperLekarzy):
   def __init__(self, parametry):
-    ScraperLekarzy.__init__(self, adresStartowy="https://online.medicover.pl/WAB3/",
+    ScraperLekarzy.__init__(self, adresStartowy="https://mol.medicover.pl",
                                   naglowekWMejlu="MEDICOVER", parametryWejsciowe=parametry)
   def odwiedzIZbierzWyniki(self, sel):
     dzien = 864000000000
-    komponentZData = "//input[@name='dtpStartDateTicks']"
 
-    sel.wait_for_page_to_load(10000)  
-
-    sel.type('id=txUserName', slownik["login"])
-    sel.type('id=txPassword', hasla.haslo('medicover', slownik['login'], slownik.get('haslo')))
-    sel.click('id=btnLogin')
-    sel.wait_for_page_to_load(20000)
-
-    sel.click('id=btnNext')
-    sel.wait_for_page_to_load(10000)
-
-    sel.click('id=lbnArrangeVisit')
-    sel.wait_for_page_to_load(10000)
-
-    sel.select('id=cboRegion', 'Warszawa')
+    sel.find_element_by_id('username-email').send_keys(slownik['login'])
+    sel.find_element_by_id('password').send_keys(hasla.haslo('medicover', slownik['login'], slownik.get('haslo')))
     time.sleep(2)
+    sel.find_element_by_id('password').send_keys(Keys.RETURN)
+    self.czekajAzSiePojawi(sel, (By.ID, "layout-navigation"))
+
+    sel.get("https://mol.medicover.pl/MyVisits")
     
-    if self.specjalizacja:
-     self.wybierz(sel, 'id=cboSpecialty', self.specjalizacja) 
-    if sel.is_element_present('id=chkFollowUpVisit'):	# pojawia się po wyborze "Pediatra"
-     sel.click('id=chkFollowUpVisit')
-     time.sleep(2)
+    sel.find_element_by_partial_link_text('Wszystkie specjalizacje').click()
+    self.czekajAzSiePojawi(sel, (By.CSS_SELECTOR, '.search-button'))
+
+    time.sleep(2)    
+    
+    Select(sel.find_element_by_id('RegionId')).select_by_value('204')	# 204 = Warszawa
+
+    self.czekajAzSiePojawi(sel, (By.ID, "SpecializationId"))
+    time.sleep(2)
+
+    print "Szukam %s" % self.specjalizacja    
+    spec = Select(sel.find_element_by_id('SpecializationId'))
+    for option in spec.options:
+       if re.findall(self.specjalizacja, option.text):
+          spec.select_by_value(option.get_attribute('value'))
+          break
+
     if self.doktor:
-     self.wybierz(sel, 'id=cboDoctor', self.doktor) 
+     raise "Unsupported 'doktor'"
     if self.centrum:
-     self.wybierz(sel, 'id=cboClinic', self.centrum)
+     raise "Unsupported 'centrum'" 
 
-    wynik={}
-    
-    dzis = datetime.datetime.now()
-    poczatkowaWartoscPoczatku = int(sel.get_value(komponentZData))
-    max_dni = (self.przed-dzis).days + 1
-
-    sel.click('id=btnSearch')
-    sel.wait_for_page_to_load(10000)
     time.sleep(3)
-    while sel.is_element_present('id=lblLoading'):
-        time.sleep(3)
+    sel.find_element_by_css_selector('.panel.panel-default .search-button button').click()
+    self.czekajAzSiePojawi(sel, (By.CSS_SELECTOR, '.results'))
 
-    while sel.is_element_present('id=dgGrid'):  
-       dataNapis = sel.get_table('dgGrid.0.0').strip().split(" ")[1].__str__()
-       data = datetime.datetime.strptime(dataNapis, "%d/%m/%Y")
-       
-       zaIleDni = (data-dzis).days
-       if data > self.przed:
-         print "Wybieglismy juz %d dni w przyszlosc, konczymy" % zaIleDni
-         break
-         
-       wynikiTegoDnia=[]  
-       wynik[data.strftime("%Y-%m-%d (%A)")] = wynikiTegoDnia  
+    time.sleep(3)
 
-       ileWierszy = int(sel.get_xpath_count("//*[@id='dgGrid']/*/*"))
-       for wiersz in range(ileWierszy):
-          komorki = [self.pozbadzSiePolskichLiter(sel.get_table('dgGrid.%d.%d' % (wiersz,kolumna))) for kolumna in [1,2,3]]
-          print data, komorki
-          wynikiTegoDnia.append(" ".join(komorki))
-          
-       nextDay="xpath=//input[@id='btnNextDay'][not(@disabled)]" 
-       if sel.is_element_present(nextDay):
-           sel.click(nextDay)
-           sel.wait_for_page_to_load(10000)
-           time.sleep(1)
-       else:
-           break          
-    return wynik
+    for i in range(5):
+      self.czekajAzSiePojawi(sel, (By.CSS_SELECTOR,'.btn.default.col-lg-4'))
+      try:
+       sel.find_element_by_css_selector('.btn.default.col-lg-4').click()
+      except Exception as e:
+       print "Failed to click next: %s" % e
+      time.sleep(3)
+
+
+    terminy = sel.find_elements_by_css_selector('.freeSlots-container')
+    
+    wyniki = [", ".join([element.text for element in termin.find_elements_by_css_selector('h5,p,span')]) for termin in terminy]
+    return wyniki
 
 
 if __name__ == "__main__":
