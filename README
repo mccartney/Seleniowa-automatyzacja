@@ -2,7 +2,7 @@ medicover.py --- automatyzuje sprawdzenie dostępności lekarza w Medicoverze
 
 Wymagania:
 - trzeba zedytować ustawienia.py - i podać login, hasło, itp.
-- odpalony selenium-server-standalone-2.0b3.jar (lub inny), np. przez:
+- odpalony selenium-server-standalone-2.44.0.jar (lub inny), np. przez:
   /usr/bin/java -jar /opt/selenium-server/selenium-server.jar -port 4444
 - biblioteka klienta Selenium w PYTHONPATH, np.
   export PYTHONPATH=$PYTHONPATH:/opt/selenium/selenium-2.0b3/py
