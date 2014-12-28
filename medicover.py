@@ -72,7 +72,7 @@ class ScraperMedicover(ScraperLekarzy):
       data = datetime.datetime.strptime(dane[0], "%d/%m/%Y")
 
       if (not self.przed) or (data < self.przed):
-        wyniki.append(", ".join(dane))
+        wyniki.append(dane)
     return wyniki
 
 

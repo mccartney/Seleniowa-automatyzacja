@@ -111,15 +111,17 @@ class ScraperLekarzy:
 
     def mejl(self, tabelka, ustawieniaMejla):
        od, do, smtp = tuple([ustawieniaMejla[x] for x in ["od", "do", "smtp"]])
-       tekst = u"<h2>Wyniki</h2>" +"<ul>"
+       tekst = u"<h2>Wyniki</h2><ul>"
        
-       for dzien in tabelka:
-          tekst=tekst + "<li>%s</li>" % dzien
+       poprzedniDzien=""
+       for wiersz in tabelka:
+          if wiersz[0] != poprzedniDzien:
+             tekst= tekst + "</ul><h4>%s<h4><ul>" % wiersz[0].strftime("%A, %Y-%m-%d")
+          tekst=tekst + "<li>%s</li>" % (", ".join(dzien))
        
        tekst=tekst+"</ul><br/><br/>"
        
-       tekst = tekst + ("<br/>\r-- " +"<br/>\r %s") \
-         % datetime.datetime.now().__str__()
+       tekst = tekst + ("<br/>\r-- " +"<br/>\r %s")   % datetime.datetime.now().__str__()
        
        
        temat="[%s] %s" % (self.naglowekWMejlu, datetime.datetime.now())
