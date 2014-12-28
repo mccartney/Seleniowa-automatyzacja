@@ -48,11 +48,6 @@ class ScraperMedicover(ScraperLekarzy):
           spec.select_by_value(option.get_attribute('value'))
           break
 
-    if self.doktor:
-     raise "Unsupported 'doktor'"
-    if self.centrum:
-     raise "Unsupported 'centrum'" 
-
     time.sleep(3)
     sel.find_element_by_css_selector('.panel.panel-default .search-button button').click()
     self.czekajAzSiePojawi(sel, (By.CSS_SELECTOR, '.results'))
@@ -70,7 +65,16 @@ class ScraperMedicover(ScraperLekarzy):
 
     terminy = sel.find_elements_by_css_selector('.freeSlots-container')
     
-    wyniki = [", ".join([element.text for element in termin.find_elements_by_css_selector('h5,p,span')]) for termin in terminy]
+    wyniki=[]
+    
+    for termin in terminy:
+      dane = [element.text for element in termin.find_elements_by_css_selector('h5,p,span')]
+      data = datetime.datetime.strptime(dane[0], "%d/%m/%Y")
+
+      print "DATA: %s, self.przed: %s,        %s " % (data, self.przed, data<self.przed)
+      
+      if (not self.przed) or (data < self.przed):
+        wyniki.append(", ".join(dane))
     return wyniki
 
 

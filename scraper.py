@@ -26,25 +26,22 @@ class ScraperLekarzy:
       self.adresStartowy = adresStartowy
       self.naglowekWMejlu = naglowekWMejlu
       
-      parametryWejsciowe = parametryWejsciowe[1:4]+['','','','']
-      self.specjalizacja, self.doktor, self.centrum = tuple([parametryWejsciowe[i] for i in [0,1,2]])
-
-      self.przed=''      
-      if parametryWejsciowe[4]:
-       self.przed = datetime.datetime.strptime(parametryWejsciowe[4], "%Y-%m-%d")
+      parametryWejsciowe = parametryWejsciowe[1:4]+['','','','','','']
+      self.specjalizacja = parametryWejsciowe[0]
+      self.przed=None
+      if parametryWejsciowe[1]:
+       self.przed = datetime.datetime.strptime(parametryWejsciowe[1], "%Y-%m-%d")
 
       #TODO to jest przecież specyficzne dla Medicoveru, przenieść do medicover.py
-      if len(parametryWejsciowe) > 5:
-         login = parametryWejsciowe[5]
+      if parametryWejsciowe[2]:
+         login = parametryWejsciowe[2]
          slownik_konta = konta.get(login, {})
          slownik_konta.setdefault('login', login)
          slownik.update(slownik_konta)
 
       print "Szukamy dla loginu %s:" % (slownik['login'],)
       print "- specjalizacji "+self.specjalizacja
-      print "- doktora       "+self.doktor
-      print "- centrum       "+self.centrum
-      print "Wizyta przed "+str(self.przed)
+      print "- przed "+str(self.przed)
 
 
     def scrapuj(self):
