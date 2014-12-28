@@ -71,8 +71,6 @@ class ScraperMedicover(ScraperLekarzy):
       dane = [element.text for element in termin.find_elements_by_css_selector('h5,p,span')]
       data = datetime.datetime.strptime(dane[0], "%d/%m/%Y")
 
-      print "DATA: %s, self.przed: %s,        %s " % (data, self.przed, data<self.przed)
-      
       if (not self.przed) or (data < self.przed):
         wyniki.append(", ".join(dane))
     return wyniki
