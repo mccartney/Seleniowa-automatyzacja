@@ -117,7 +117,7 @@ class ScraperLekarzy:
        for wiersz in tabelka:
           if wiersz[0] != poprzedniDzien:
              tekst= tekst + "</ul><h4>%s<h4><ul>" % wiersz[0].strftime("%A, %Y-%m-%d")
-          reprezentacja = "%s" % (", ".join(wiersz[1:]))   
+          reprezentacja = self.pozbadzSiePolskichLiter("%s" % (", ".join(wiersz[1:])))
           style=""
           if not self.sprawdzCzyJuzSpotkalismy(reprezentacja):
             style=" style='color: green'"
