@@ -86,6 +86,8 @@ class ScraperLekarzy:
            return
 
         wynikSformatowany=pprint.pformat(wynik)
+
+        print "Wynik: "+wynikSformatowany
         
         if self.sprawdzCzyJuzSpotkalismy(wynikSformatowany):
           print "NIC NOWEGO"
