@@ -119,7 +119,7 @@ class ScraperLekarzy:
              tekst= tekst + "</ul><h4>%s<h4><ul>" % wiersz[0].strftime("%A, %Y-%m-%d")
           reprezentacja = "%s" % (", ".join(wiersz[1:]))   
           style=""
-          if !self.sprawdzCzyJuzSpotkalismy(reprezentacja):
+          if not self.sprawdzCzyJuzSpotkalismy(reprezentacja):
             style=" style='color: green'"
           tekst=tekst + "<li%s>%s</li>" % (style, reprezentacja)
        
