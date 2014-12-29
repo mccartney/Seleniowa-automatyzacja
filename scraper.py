@@ -122,6 +122,7 @@ class ScraperLekarzy:
           if not self.sprawdzCzyJuzSpotkalismy("%s" % wiersz[0]+reprezentacja):
             style=" style='color: green'"
           tekst=tekst + "<li%s>%s</li>" % (style, reprezentacja)
+          poprzedniDzien = wiersz[0]
        
        tekst=tekst+"</ul><br/><br/>"
        
