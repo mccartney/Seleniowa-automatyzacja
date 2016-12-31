@@ -23,17 +23,24 @@ class ScraperMedicover(ScraperLekarzy):
   def odwiedzIZbierzWyniki(self, sel):
     dzien = 864000000000
 
+    sel.find_element_by_id('oidc-submit').click()
+    glowneOkno = sel.window_handles[0]
+    sel.switch_to_window(sel.window_handles[1])
+    self.czekajAzSiePojawi(sel, (By.ID, 'username-email'))
     sel.find_element_by_id('username-email').send_keys(slownik['login'])
     sel.find_element_by_id('password').send_keys(hasla.haslo('medicover', slownik['login'], slownik.get('haslo')))
     time.sleep(2)
     sel.find_element_by_id('password').send_keys(Keys.RETURN)
-    self.czekajAzSiePojawi(sel, (By.ID, "layout-navigation"))
-
-    sel.get("https://mol.medicover.pl/MyVisits")
+    time.sleep(3)
+    sel.switch_to_window(glowneOkno)
     
-    sel.find_element_by_partial_link_text('Wszystkie specjalizacje').click()
+    # ============ po logowaniu
+    
+    self.czekajAzSiePojawi(sel, (By.ID, "myCarousel"))
+    sel.get("https://mol.medicover.pl/MyVisits")
+    sel.get("https://mol.medicover.pl/MyVisits?bookingTypeId=2&mex=True&pfm=1")
     self.czekajAzSiePojawi(sel, (By.CSS_SELECTOR, '.search-button'))
-
+    
     time.sleep(2)    
     
     Select(sel.find_element_by_id('RegionId')).select_by_value('204')	# 204 = Warszawa
@@ -49,7 +56,7 @@ class ScraperMedicover(ScraperLekarzy):
           break
 
     time.sleep(3)
-    sel.find_element_by_css_selector('.panel.panel-default .search-button button').click()
+    sel.find_element_by_css_selector('#advancedSearchForm .panel.panel-default .panel-body .search-button button').click()
     self.czekajAzSiePojawi(sel, (By.CSS_SELECTOR, '.results'))
 
     time.sleep(3)
