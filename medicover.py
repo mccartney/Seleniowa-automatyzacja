@@ -55,7 +55,7 @@ class ScraperMedicover(ScraperLekarzy):
           spec.select_by_value(option.get_attribute('value'))
           break
 
-    time.sleep(3)
+    time.sleep(6)
     sel.find_element_by_css_selector('#advancedSearchForm .panel.panel-default .panel-body .search-button button').click()
     self.czekajAzSiePojawi(sel, (By.CSS_SELECTOR, '.results'))
 
