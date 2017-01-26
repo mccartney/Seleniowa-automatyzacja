@@ -51,7 +51,7 @@ class ScraperLekarzy:
        self.sprawdzCzyWynikNowyIEwentualnieZakomunikuj(wynik)
       finally:
          try: 
-            selenium.close()
+            selenium.quit()
             time.sleep(2)
          except:
             traceback.print_exc()
