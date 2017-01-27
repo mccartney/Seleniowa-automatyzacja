@@ -6,6 +6,7 @@ from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException 
 
 import time, os, datetime, hashlib
 import smtplib
@@ -67,6 +68,13 @@ class ScraperLekarzy:
      
     def czekajAzSiePojawi(self, driver, co):
      return WebDriverWait(driver, timeout=30).until(EC.presence_of_element_located(co))
+     
+    def czekajAzSiePojawiOpcjonalnie(self, driver, co):
+     try: 
+      WebDriverWait(driver, timeout=30).until(EC.presence_of_element_located(co))
+      return True
+     except TimeoutException:
+      return False
 
     # TODO te dwie metody trzeba by obiektowo zrobic, wydzielic klase - Zapisywacz albo Pamiec
     def sprawdzCzyJuzSpotkalismy(self, co):

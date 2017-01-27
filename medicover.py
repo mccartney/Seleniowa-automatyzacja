@@ -62,9 +62,11 @@ class ScraperMedicover(ScraperLekarzy):
     time.sleep(3)
 
     for i in range(5):
-      self.czekajAzSiePojawi(sel, (By.CSS_SELECTOR,'.btn.default.col-lg-4'))
+      if not self.czekajAzSiePojawiOpcjonalnie(sel, (By.CSS_SELECTOR,'.row.panel .center button')):
+       break
+       
       try:
-       sel.find_element_by_css_selector('.btn.default.col-lg-4').click()
+       sel.find_element_by_css_selector('.row.panel .center button').click()
       except Exception as e:
        print "Failed to click next: %s" % e
       time.sleep(3)
