@@ -25,7 +25,6 @@ import hasla
 class ScraperLekarzy: 
     def __init__(self, adresStartowy, naglowekWMejlu, parametryWejsciowe):
       self.adresStartowy = adresStartowy
-      self.naglowekWMejlu = naglowekWMejlu
       
       parametryWejsciowe = parametryWejsciowe[1:4]+['','','','','','']
       self.specjalizacja = parametryWejsciowe[0]
@@ -43,6 +42,8 @@ class ScraperLekarzy:
       print "Szukamy dla loginu %s:" % (slownik['login'],)
       print "- specjalizacji "+self.specjalizacja
       print "- przed "+str(self.przed)
+      
+      self.naglowekWMejlu = naglowekWMejlu+" "+slownik['login']
 
 
     def scrapuj(self):
