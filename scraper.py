@@ -43,7 +43,7 @@ class ScraperLekarzy:
       print "- specjalizacji "+self.specjalizacja
       print "- przed "+str(self.przed)
       
-      self.naglowekWMejlu = naglowekWMejlu+" "+slownik['login']
+      self.naglowekWMejlu = naglowekWMejlu+" "+slownik['login']+ " " +self.specjalizacja
 
 
     def scrapuj(self):
