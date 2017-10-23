@@ -24,6 +24,7 @@ class ScraperMedicover(ScraperLekarzy):
     dzien = 864000000000
 
     sel.find_element_by_id('oidc-submit').click()
+    time.sleep(2)
     glowneOkno = sel.window_handles[0]
     sel.switch_to_window(sel.window_handles[1])
     self.czekajAzSiePojawi(sel, (By.ID, 'username-email'))

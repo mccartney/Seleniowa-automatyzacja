@@ -47,8 +47,8 @@ class ScraperLekarzy:
 
 
     def scrapuj(self):
+      selenium = self.wystartujSelenium()
       try:
-       selenium = self.wystartujSelenium()
        wynik = self.odwiedzIZbierzWyniki(selenium)
        self.sprawdzCzyWynikNowyIEwentualnieZakomunikuj(wynik)
       finally:
